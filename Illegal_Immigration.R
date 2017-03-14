@@ -8,6 +8,7 @@ library(plotly)
 library(ggmap)
 
 #Importing Illegal Immigration data set from Kaggle
+setwd('/home/rxe/myProjects/dataScience/illegalImmigration/')
 arrests <- read.csv("/home/rxe/myProjects/dataScience/illegalImmigration/arrests.csv")
 
 #attempting to clean the untidy dataframe
@@ -66,7 +67,7 @@ borders <- ggplot(by_border, aes(x = Year, y = Number_Arrested, fill = Demograph
               ggtitle("Illegal Immigration Arrests at Each Border") +
               theme_bw() + 
   theme(axis.text.x = element_text(size = 10))
-ggplotly(borders,  kwargs=list(layout=list(hovermode="closest")))
+ggplotly(borders)
 
 #since the arrest totals are so much higher for the southwest than for the other two borders it may make more sense
 #   create individual graphs for each border instead of facet wrapping
@@ -189,8 +190,8 @@ Sector <- levels(arrests$Sector)
 Sector <- Sector[3:length(Sector)]
 
 #using the geocode command to get the latitude and longitude for each sector
-#locations <- data.frame(Sector, geocode(Sector, output = "latlon"))
-#write.csv(locations, file = "locations.csv")
+# locations <- data.frame(Sector, geocode(Sector, output = "latlon"))
+# write.csv(locations, file = "locations.csv")
 # Removed to keep csv file and not do api call everytime
 
 locations <- read.csv("locations.csv")
