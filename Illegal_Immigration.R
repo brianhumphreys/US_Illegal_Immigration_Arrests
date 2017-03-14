@@ -212,5 +212,20 @@ mapPlot <- function(yr, title = paste("Illegal Immigration Arrests in", as.chara
 mapPlot(2000)
 mapPlot(2016)
 
+## ADDED SINCE WAS NOT IN THE SCRIPT DASHBOARD WAS NOT CREATING THE DATA FRAME THUS GIVING ERROR 
+## RAVI
+#creating separate dataframes with just "Mexicans" arrests and just "All Immigrants" arrests to find the percentage
+# of arrests accounted for by Mexican immigrants each year
+mexican_arrests <-  filter(arrests, Border == "United States", Demographic == "Mexicans")
+all_arrests <- filter(arrests, Border == "United States", Demographic == "All Immigrants")
 
+#creating a new dataframe with these percentages (rounded to 2 decimal places) as well as the number of Mexican
+# immigrants arrested and the total number of arrests for each year
+percentages <- data.frame(all_arrests$Year, 
+                          mexican_arrests$Number_Arrested,
+                          all_arrests$Number_Arrested,
+                          round(mexican_arrests$Number_Arrested / all_arrests$Number_Arrested * 100, digits = 2))
+names(percentages) <- c("Year","Mexicans_Arrested", "Total_Arrests", "Percentage")
+
+percentages
 
