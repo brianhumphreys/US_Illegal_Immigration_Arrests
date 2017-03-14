@@ -189,8 +189,11 @@ Sector <- levels(arrests$Sector)
 Sector <- Sector[3:length(Sector)]
 
 #using the geocode command to get the latitude and longitude for each sector
-locations <- data.frame(Sector, geocode(Sector, output = "latlon"))
+#locations <- data.frame(Sector, geocode(Sector, output = "latlon"))
+#write.csv(locations, file = "locations.csv")
+# Removed to keep csv file and not do api call everytime
 
+locations <- read.csv("locations.csv")
 #subset of arrests dataframe with only the rows for individual sectors, no totals
 arrests2 <- filter(arrests, Sector != "", Sector != "All")
 
