@@ -46,7 +46,7 @@ tot <- ggplot(totals, aes(x = Year, y = Number_Arrested, fill = Demographic)) +
                                            angle=40, hjust=1)) +
           scale_x_continuous(breaks = scales::pretty_breaks(n = 15)) 
   
-ggplotly(tot, kwargs=list(layout=list(hovermode="closest")))
+ggplotly(tot)
 
 dev.off()
 #creating a new dataframe with yearly arrest totals by border
@@ -83,7 +83,7 @@ coast <- ggplot(filter(by_border, Border == "Coast"),
                                                angle=40, hjust=1)) +
               scale_x_continuous(breaks = scales::pretty_breaks(n = 15)) 
 
-ggplotly(coast, kwargs=list(layout=list(hovermode="closest")))
+ggplotly(coast)
 
 north <- ggplot(filter(by_border, Border == "North"), 
                 aes(x = Year, y = Number_Arrested, fill = Demographic)) +
@@ -97,7 +97,7 @@ north <- ggplot(filter(by_border, Border == "North"),
                                                angle=40, hjust=1)) +
   scale_x_continuous(breaks = scales::pretty_breaks(n = 15))
 
-ggplotly(north, kwargs=list(layout=list(hovermode="closest")))
+ggplotly(north)
 
 southwest <- ggplot(filter(by_border, Border == "Southwest"), 
                     aes(x = Year, y = Number_Arrested, fill = Demographic)) +
@@ -111,7 +111,7 @@ southwest <- ggplot(filter(by_border, Border == "Southwest"),
                                    angle=40, hjust=1)) +
               scale_x_continuous(breaks = scales::pretty_breaks(n = 15))
 
-ggplotly(southwest, kwargs=list(layout=list(hovermode="closest")))
+ggplotly(southwest)
 
 #while this approach was much more tedious, it made the graphs significantly easier to read
 
@@ -140,7 +140,7 @@ sectors <- ggplot(mostarrests, aes(x = Sector, y = Number_Arrested, fill = Demog
               theme(axis.text.x = element_text(size = 6,
                                                angle=40, hjust=1))
 
-ggplotly(sectors, kwargs=list(layout=list(hovermode="closest")))
+ggplotly(sectors)
 
 #This comparision is nice but it is based on the Sectors with the 8 highest arrest total from 2000.  It is 
 # possible that in later years the Sectors with the highest arrest totals changed.  Also we can only see
