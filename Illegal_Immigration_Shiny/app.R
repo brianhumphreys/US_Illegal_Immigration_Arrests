@@ -47,11 +47,12 @@ ui <- dashboardPage(
                 ),
 
                 fluidRow(
-                  box(plotlyOutput("totals", width = 1000, height = 625), width = 8),
-                  box(dataTableOutput("table"), width = 4)
+                  box(plotlyOutput("totals", width = 900, height = 620), width = 7),
+                  box(dataTableOutput("table"), width = 5)
                 ),
                 box(title = "Notes About the Data Set", width = 12,
-                    "The dataset I used for this project can be found on the Kaggle website.
+                    collapsible = TRUE,
+                    p("The dataset I used for this project can be found on the Kaggle website.
                     
                     Here is a link to the original dataset: https://www.kaggle.com/cbp/illegal-immigrants
                     
@@ -62,7 +63,7 @@ ui <- dashboardPage(
                     It is important to note that the numbers listed are only the illegal immigrants that were ARRESTED. 
                     This means that there were almost certainly more illegal immigrants each year that managed to enter 
                     the country unnoticed. As such I cannot claim that my analysis is an accurate representation of trends 
-                    in illegal immigration overall; it only extends to illegal immigrants that were arrested."
+                    in illegal immigration overall; it only extends to illegal immigrants that were arrested.")
                 )
                 )),
       
@@ -73,7 +74,24 @@ ui <- dashboardPage(
                           choices = list("Coast", "North", "Southwest"), 
                           selected = "Coast"),
               box(
-                plotlyOutput("ggpanel", width = 1000, height = 626), width = 8)
+                plotlyOutput("ggpanel", width = 1000, height = 626), width = 8),
+              box(title = "Notes About each visual",
+                p("Some more indepth Analysis of Each area of Arrest",
+                  tags$ul(
+                    tags$li("Analysis w.r.t. Coast. I'll add more filler 
+                            sentences just so that it can be in paragraph
+                            format so that I can see how it will look like. 
+                            Once we add some actual analysis about each section."),
+                    tags$li("Analysis w.r.t. Northern Border. I'll add more filler 
+                            sentences just so that it can be in paragraph
+                            format so that I can see how it will look like. 
+                            Once we add some actual analysis about each section."),
+                    tags$li("Analysis w.r.t. Southwestern Border. I'll add more filler 
+                            sentences just so that it can be in paragraph
+                            format so that I can see how it will look like. 
+                            Once we add some actual analysis about each section."))), 
+                width = 3
+              )
               ),
       
       #third tab content
@@ -97,14 +115,17 @@ server <- function(input, output) {
   output$totals <- renderPlotly({
     ggplotly(tot)
   })
-  output$table <- renderDataTable({
-    percentages
+  output$table <- renderDataTable(
+    percentages, {
+    options = list(
+    pageLength = 10,# Only outputs first 10 values to be more aesthetically pleasing
+    scrollX = TRUE) 
   })
   output$coast <- renderPlotly({
     ggplotly(coast)
   })
   output$north <- renderPlotly({
-    ggplotly(north)
+    ggplotly(north) 
   })
   output$southwest <- renderPlotly({
     ggplotly(southwest)
@@ -113,12 +134,12 @@ server <- function(input, output) {
     yearPlot(input$year)
   })
   output$mapplot <- renderPlotly({
-    mapPlot(input$year)
+    mapPlot(input$year) 
   })
   output$ggpanel <- renderPlotly({
     choices <- switch(input$var,
                       "Coast" = ggplotly(coast),
-                      "North" = ggplotly(north),
+                      "North" = ggplotly(north,  kwargs=list(layout=list(hovermode="closest"))) ,
                       "Southwest" = ggplotly(southwest)  
     )
   })
