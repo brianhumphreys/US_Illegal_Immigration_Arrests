@@ -8,7 +8,7 @@ library(plotly)
 library(ggmap)
 
 #Importing Illegal Immigration data set from Kaggle
-arrests <- read.csv("C://Users/bdaet/Downloads/arrests.csv")
+arrests <- read.csv("/home/rxe/myProjects/dataScience/illegalImmigration/arrests.csv")
 
 #attempting to clean the untidy dataframe
 arrests <- gather(arrests, Description, Number_Arrested, -Border, -Sector, -State.Territory)
@@ -41,10 +41,14 @@ tot <- ggplot(totals, aes(x = Year, y = Number_Arrested, fill = Demographic)) +
           xlab("Year") +
           ylab("Total Arrests") +
           ggtitle("Total Illegal Immigration Arrests") +
-          theme_minimal()
-ggplotly(tot)
+          theme_minimal() + 
+          theme(axis.text.x = element_text(size = 12,
+                                           angle=40, hjust=1)) +
+          scale_x_continuous(breaks = scales::pretty_breaks(n = 15)) 
+  
+ggplotly(tot, kwargs=list(layout=list(hovermode="closest")))
 
-
+dev.off()
 #creating a new dataframe with yearly arrest totals by border
 #again the original dataframe already included this totals as observations where Sector == All
 by_border <- arrests %>%
@@ -60,8 +64,9 @@ borders <- ggplot(by_border, aes(x = Year, y = Number_Arrested, fill = Demograph
               xlab("Year") +
               ylab("Total Arrests") +
               ggtitle("Illegal Immigration Arrests at Each Border") +
-              theme_bw()
-ggplotly(borders)
+              theme_bw() + 
+  theme(axis.text.x = element_text(size = 10))
+ggplotly(borders,  kwargs=list(layout=list(hovermode="closest")))
 
 #since the arrest totals are so much higher for the southwest than for the other two borders it may make more sense
 #   create individual graphs for each border instead of facet wrapping
@@ -73,8 +78,12 @@ coast <- ggplot(filter(by_border, Border == "Coast"),
               xlab("Year") +
               ylab("Total Arrests") +
               ggtitle("Illegal Immigration Arrests Along the Coast") +
-              theme_minimal()
-ggplotly(coast)
+              theme_minimal() + 
+              theme(axis.text.x = element_text(size = 12, 
+                                               angle=40, hjust=1)) +
+              scale_x_continuous(breaks = scales::pretty_breaks(n = 15)) 
+
+ggplotly(coast, kwargs=list(layout=list(hovermode="closest")))
 
 north <- ggplot(filter(by_border, Border == "North"), 
                 aes(x = Year, y = Number_Arrested, fill = Demographic)) +
@@ -83,8 +92,12 @@ north <- ggplot(filter(by_border, Border == "North"),
               xlab("Year") +
               ylab("Total Arrests") +
               ggtitle("Illegal Immigration Arrests at Northern Border") +
-              theme_minimal()
-ggplotly(north)
+              theme_minimal() + 
+              theme(axis.text.x = element_text(size = 12, 
+                                               angle=40, hjust=1)) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 15))
+
+ggplotly(north, kwargs=list(layout=list(hovermode="closest")))
 
 southwest <- ggplot(filter(by_border, Border == "Southwest"), 
                     aes(x = Year, y = Number_Arrested, fill = Demographic)) +
@@ -93,8 +106,12 @@ southwest <- ggplot(filter(by_border, Border == "Southwest"),
               xlab("Year") +
               ylab("Total Arrests") +
               ggtitle("Illegal Immigration Arrests at Southwest Border") +
-              theme_minimal()
-ggplotly(southwest)
+              theme_minimal() + 
+              theme(axis.text.x = element_text(size = 12, 
+                                   angle=40, hjust=1)) +
+              scale_x_continuous(breaks = scales::pretty_breaks(n = 15))
+
+ggplotly(southwest, kwargs=list(layout=list(hovermode="closest")))
 
 #while this approach was much more tedious, it made the graphs significantly easier to read
 
@@ -120,8 +137,10 @@ sectors <- ggplot(mostarrests, aes(x = Sector, y = Number_Arrested, fill = Demog
               ylab("Total Arrests") +
               facet_wrap(~ Year) +
               theme_bw()+
-              theme(axis.text.x = element_text(size = 6))
-ggplotly(sectors)
+              theme(axis.text.x = element_text(size = 6,
+                                               angle=40, hjust=1))
+
+ggplotly(sectors, kwargs=list(layout=list(hovermode="closest")))
 
 #This comparision is nice but it is based on the Sectors with the 8 highest arrest total from 2000.  It is 
 # possible that in later years the Sectors with the highest arrest totals changed.  Also we can only see
@@ -157,7 +176,8 @@ yearPlot <- function(yr, title = paste("Sectors with the Highest Arrest Totals i
                 ylab("Total Arrests") +
                 ggtitle(title) +
                 theme_minimal() +
-                theme(axis.text.x = element_text(size = 8))
+                theme(axis.text.x = element_text(size = 12, face = "bold",
+                                                 angle=40, hjust=1))
     ggplotly(plot)    #making the plot interactive
 }    
 yearPlot(2000)
@@ -212,8 +232,7 @@ mapPlot <- function(yr, title = paste("Illegal Immigration Arrests in", as.chara
 mapPlot(2000)
 mapPlot(2016)
 
-## ADDED SINCE WAS NOT IN THE SCRIPT DASHBOARD WAS NOT CREATING THE DATA FRAME THUS GIVING ERROR 
-## RAVI
+
 #creating separate dataframes with just "Mexicans" arrests and just "All Immigrants" arrests to find the percentage
 # of arrests accounted for by Mexican immigrants each year
 mexican_arrests <-  filter(arrests, Border == "United States", Demographic == "Mexicans")
@@ -226,6 +245,4 @@ percentages <- data.frame(all_arrests$Year,
                           all_arrests$Number_Arrested,
                           round(mexican_arrests$Number_Arrested / all_arrests$Number_Arrested * 100, digits = 2))
 names(percentages) <- c("Year","Mexicans_Arrested", "Total_Arrests", "Percentage")
-
-percentages
 
