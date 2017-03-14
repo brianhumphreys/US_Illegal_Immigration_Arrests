@@ -118,7 +118,7 @@ server <- function(input, output) {
   output$table <- renderDataTable(
     percentages, {
     options = list(
-    pageLength = 10,# Only outputs first 10 values to be more aesthetically pleasing
+    pageLength = 10, # Only outputs first 10 values to be more aesthetically pleasing
     scrollX = TRUE) 
   })
   output$coast <- renderPlotly({
