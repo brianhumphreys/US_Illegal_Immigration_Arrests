@@ -8,8 +8,8 @@ library(plotly)
 library(ggmap)
 
 #Importing Illegal Immigration data set from Kaggle
-setwd('/home/rxe/myProjects/dataScience/illegalImmigration/')
-arrests <- read.csv("/home/rxe/myProjects/dataScience/illegalImmigration/arrests.csv")
+setwd('/myProjects/approp/working/directoary/illegalImmigration/')
+arrests <- read.csv("arrests.csv")
 
 #attempting to clean the untidy dataframe
 arrests <- gather(arrests, Description, Number_Arrested, -Border, -Sector, -State.Territory)
