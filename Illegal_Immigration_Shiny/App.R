@@ -97,10 +97,8 @@ ui <- dashboardPage(
       #third tab content
       tabItem(tabName = "sectors",
               fluidRow(
-                box(plotlyOutput("mapplot", width = 1000, height = 700), 
-                    width = 8, 
-                    collapsible = TRUE),
-                box(p("Somebody once told me the world is gonna roll me
+                box(plotlyOutput("barplot", width = 1000, height = 650), width = 8, collapsible = TRUE),
+                box(p("Somebody once told me the world is gonna roll me \n
                       I ain't the sharpest tool in the shed
                       She was looking kind of dumb with her finger and her thumb
                       In the shape of an 'L' on her forehead"),
@@ -120,7 +118,9 @@ ui <- dashboardPage(
                               max = 2016,
                               value = 2016), width = 4),
               fluidRow(
-                box(plotlyOutput("barplot", width = 1000, height = 650), width = 8),
+                box(plotlyOutput("mapplot", width = 1000, height = 700), 
+                                           width = 8, 
+                                           collapsible = TRUE),
                 box(p("What the fuck did you just fucking say about me, 
                       you little bitch? I’ll have you know I graduated top of 
                       my class in the Navy Seals, and I’ve been involved in numerous
