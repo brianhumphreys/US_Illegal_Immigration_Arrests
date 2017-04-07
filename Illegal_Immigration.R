@@ -5,12 +5,12 @@ library(plyr)     #plyr and dplyr used for aggregating data
 library(dplyr)
 library(ggplot2)  #ggplot2 and plotly used for data visualition
 library(plotly)
-library(ggmap)
+library(ggmap)   #ggmap used for geocode function to get latitude and longitude info for cities
 
 #Importing Illegal Immigration data set from Kaggle
-setwd('/myProjects/approp/working/directoary/illegalImmigration/')
+setwd('/home/myProjects/illegalImmigration/')
 arrests <- read.csv("arrests.csv")
-
+arrests_loc <- read.csv("arrestLocations.csv")
 #attempting to clean the untidy dataframe
 arrests <- gather(arrests, Description, Number_Arrested, -Border, -Sector, -State.Territory)
 arrests <- separate(arrests, Description, c("Year", "Demographic"))
@@ -25,123 +25,58 @@ arrests$Year <- as.integer(arrests$Year)
 #changing "All" in the Demographic column to "All Immigrants" to make it more clear
 arrests$Demographic <- str_replace(arrests$Demographic, "All", "All Immigrants")
 
-#creating a csv file of the cleaned dataset
-write.csv(arrests, file = "immigration_arrests.csv")
 
 #creating a new dataframe with yearly arrest totals
 #it appears the original dataframe already included totals as observations where Border == United States
 totals <- arrests %>%
-              group_by(Year, Demographic) %>%
-              filter(Border == "United States") %>%
-              arrange(Demographic)
+  group_by(Year, Demographic) %>%
+  filter(Border == "United States") %>%
+  arrange(Demographic)
 
 #creating an area plot comparing yearly arrest totals of all immigrants and of only mexican immigrants 
 tot <- ggplot(totals, aes(x = Year, y = Number_Arrested, fill = Demographic)) +
-          geom_area(alpha = 0.65, position = "dodge") +
-          scale_fill_manual(values = c("skyblue1", "skyblue4")) +
-          xlab("Year") +
-          ylab("Total Arrests") +
-          ggtitle("Total Illegal Immigration Arrests") +
-          theme_minimal() + 
-          theme(axis.text.x = element_text(size = 12,
-                                           angle=40, hjust=1)) +
-          scale_x_continuous(breaks = scales::pretty_breaks(n = 15)) 
-  
+  geom_area(alpha = 0.65, position = "dodge") +
+  scale_fill_manual(values = c("skyblue1", "skyblue4")) +
+  xlab("Year") +
+  ylab("Total Arrests") +
+  ggtitle("Total Illegal Immigration Arrests") +
+  theme_minimal() + 
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 17)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ggplotly(tot)
 
-dev.off()
+
 #creating a new dataframe with yearly arrest totals by border
 #again the original dataframe already included this totals as observations where Sector == All
 by_border <- arrests %>%
-                  group_by(Year, Demographic) %>%
-                  filter(Sector == "All") %>%
-                  arrange(Demographic)
-
-#creating area plots for each border comparing the yearly arrest totals of all immigrants and of only mexicans
-borders <- ggplot(by_border, aes(x = Year, y = Number_Arrested, fill = Demographic)) +
-              geom_area(alpha = 0.65, position = "dodge") +
-              scale_fill_manual(values = c("skyblue1", "skyblue4")) +
-              facet_wrap(~ Border) +
-              xlab("Year") +
-              ylab("Total Arrests") +
-              ggtitle("Illegal Immigration Arrests at Each Border") +
-              theme_bw() + 
-  theme(axis.text.x = element_text(size = 10))
-ggplotly(borders)
-
-#since the arrest totals are so much higher for the southwest than for the other two borders it may make more sense
-#   create individual graphs for each border instead of facet wrapping
-
-coast <- ggplot(filter(by_border, Border == "Coast"), 
-                aes(x = Year, y = Number_Arrested, fill = Demographic)) +
-              geom_area(alpha = 0.65, position = "dodge") +
-              scale_fill_manual(values = c("skyblue1", "skyblue4")) +
-              xlab("Year") +
-              ylab("Total Arrests") +
-              ggtitle("Illegal Immigration Arrests Along the Coast") +
-              theme_minimal() + 
-              theme(axis.text.x = element_text(size = 12, 
-                                               angle=40, hjust=1)) +
-              scale_x_continuous(breaks = scales::pretty_breaks(n = 15)) 
-
-ggplotly(coast)
-
-north <- ggplot(filter(by_border, Border == "North"), 
-                aes(x = Year, y = Number_Arrested, fill = Demographic)) +
-              geom_area(alpha = 0.65, position = "dodge") +
-              scale_fill_manual(values = c("skyblue1", "skyblue4")) +
-              xlab("Year") +
-              ylab("Total Arrests") +
-              ggtitle("Illegal Immigration Arrests at Northern Border") +
-              theme_minimal() + 
-              theme(axis.text.x = element_text(size = 12, 
-                                               angle=40, hjust=1)) +
-  scale_x_continuous(breaks = scales::pretty_breaks(n = 15))
-
-ggplotly(north)
-
-southwest <- ggplot(filter(by_border, Border == "Southwest"), 
-                    aes(x = Year, y = Number_Arrested, fill = Demographic)) +
-              geom_area(alpha = 0.65, position = "dodge") +
-              scale_fill_manual(values = c("skyblue1", "skyblue4")) +
-              xlab("Year") +
-              ylab("Total Arrests") +
-              ggtitle("Illegal Immigration Arrests at Southwest Border") +
-              theme_minimal() + 
-              theme(axis.text.x = element_text(size = 12, 
-                                   angle=40, hjust=1)) +
-              scale_x_continuous(breaks = scales::pretty_breaks(n = 15))
-
-ggplotly(southwest)
-
-#while this approach was much more tedious, it made the graphs significantly easier to read
+  group_by(Year, Demographic) %>%
+  filter(Sector == "All") %>%
+  arrange(Demographic)
 
 
-#creating barplots comparing the arrest totals in the Sectors with the 8 highest arrest totals for 2000, 2005,
-# 2010 and 2016
-mostarrests <- filter(arrests, Sector %in% c("Del Rio",
-                                             "El Centro",
-                                             "El Paso",
-                                             "Laredo",
-                                             "Rio Grande Valley",
-                                             "San Diego",
-                                             "Tucson",
-                                             "Yuma"),
-                               Year %in% c(2000, 2005, 2010, 2016))
-mostarrests$Demographic <- ordered(mostarrests$Demographic, levels = c("Mexicans", "All Immigrants"))
-#setting the level order for the Type attribute so the smaller values on the bar plot aren't hidden
+#Since the arrest totals are so much higher for the southwest than for the other two borders it may make more 
+#sense to create individual graphs for each border instead of facet wrapping.
+#To avoid rewriting the code for the graph for each border I chose to write a function that will create a graph
+#for a given border.
+border <- function(x, title) {
+  t <- ggplot(filter(by_border, Border == x), 
+              aes(x = Year, y = Number_Arrested, fill = Demographic)) +
+    geom_area(alpha = 0.65, position = "dodge") +
+    scale_fill_manual(values = c("skyblue1", "skyblue4")) +
+    xlab("Year") +
+    ylab("Total Arrests") +
+    ggtitle(title) +
+    theme_minimal() + 
+    scale_x_continuous(breaks = scales::pretty_breaks(n = 17)) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
+  ggplotly(t)
+}
 
-sectors <- ggplot(mostarrests, aes(x = Sector, y = Number_Arrested, fill = Demographic)) +
-              geom_bar(stat = "identity", position = "identity", alpha = 0.65) +
-              scale_fill_manual(values = c("skyblue4", "skyblue1")) +
-              xlab("Sector") +
-              ylab("Total Arrests") +
-              facet_wrap(~ Year) +
-              theme_bw()+
-              theme(axis.text.x = element_text(size = 6,
-                                               angle=40, hjust=1))
+border("Coast", "Illegal Immigration Arrests Along the Coast")
+border("North", "Illegal Immigration Arrests at Northern Border")
+border("Southwest", "Illegal Immigration Arrests at Southwest Border")
 
-ggplotly(sectors)
 
 #This comparision is nice but it is based on the Sectors with the 8 highest arrest total from 2000.  It is 
 # possible that in later years the Sectors with the highest arrest totals changed.  Also we can only see
@@ -151,56 +86,38 @@ ggplotly(sectors)
 # Sectors with the 8 highest arrest totals for a given year and create a bar plot comparing the arrest totals 
 # for all illegal immigrants and mexican immigrants for that year.
 
-yearPlot <- function(yr, title = paste("Sectors with the Highest Arrest Totals in", as.character(yr))) {
-    temp <- filter(arrests, Sector != "", Sector != "All", Year == yr) #filtering out rows that don't apply to
-                                                                    ## to a specific Sector
-                                                                      #filtering by the provided Year value
-    
-    top8 <- temp %>%
-              filter(Demographic == "All Immigrants") %>% 
-      #finding the Sectors with the 8 highest arrest totals for that year
-              arrange(desc(Number_Arrested))            
-    top8 <- top8[1:8,]
-    
-    temp <- filter(temp, Sector %in% top8$Sector)  #filtering by the Sectors w/ the 8 highest arrest totals
-    temp$Demographic <- ordered(temp$Demographic, levels = c("Mexicans", "All Immigrants"))
-                                                              #setting the level order for the Demographic
-                                                              # attribute so the smaller values on the bar plot
-                                                              # aren't hidden
-    
-    
-    #creating a bar plot comparing the arrest totals for all illegal immigrants and for only mexican immigrants
-    plot <- ggplot(temp, aes(x = Sector, y = Number_Arrested, fill = Demographic)) +
-                geom_bar(stat = "identity", position = "identity", alpha = .65) +
-                scale_fill_manual(values = c("skyblue4", "skyblue1")) +
-                xlab("Sector") +
-                ylab("Total Arrests") +
-                ggtitle(title) +
-                theme_minimal() +
-                theme(axis.text.x = element_text(size = 12, face = "bold",
-                                                 angle=40, hjust=1))
-    ggplotly(plot)    #making the plot interactive
+yearPlot <- function(yr) {
+  temp <- filter(arrests, Sector != "", Sector != "All", Year == yr) #filtering out rows that don't apply to
+  ## to a specific Sector
+  #filtering by the provided Year value
+  
+  top8 <- temp %>%
+    filter(Demographic == "All Immigrants") %>% 
+    #finding the Sectors with the 8 highest arrest totals for that year
+    arrange(desc(Number_Arrested))            
+  top8 <- top8[1:8,]
+  
+  temp <- filter(temp, Sector %in% top8$Sector)  #filtering by the Sectors w/ the 8 highest arrest totals
+  temp$Demographic <- ordered(temp$Demographic, levels = c("Mexicans", "All Immigrants"))
+  #setting the level order for the Demographic
+  # attribute so the smaller values on the bar plot
+  # aren't hidden
+  
+  
+  #creating a bar plot comparing the arrest totals for all illegal immigrants and for only mexican immigrants
+  plot <- ggplot(temp, aes(x = Sector, y = Number_Arrested, fill = Demographic)) +
+    geom_bar(stat = "identity", position = "identity", alpha = .65) +
+    coord_flip() +
+    scale_fill_manual(values = c("skyblue4", "skyblue1")) +
+    ylab("Total Arrests") +
+    theme_minimal() +
+    theme(axis.text.y = element_text(size = 7, angle = 30),
+          axis.title.y = element_blank(),
+          axis.text.x = element_blank())
+  ggplotly(plot)    #making the plot interactive
 }    
 yearPlot(2000)
 yearPlot(2016)
-
-#creating a vector with all the different sectors
-Sector <- levels(arrests$Sector)
-#taking out the sectors "All" and "" which are used for totals and aren't actual individual sectors
-Sector <- Sector[3:length(Sector)]
-
-#using the geocode command to get the latitude and longitude for each sector
-# locations <- data.frame(Sector, geocode(Sector, output = "latlon"))
-# write.csv(locations, file = "locations.csv")
-# Removed to keep csv file and not do api call everytime
-
-locations <- read.csv("locations.csv")
-#subset of arrests dataframe with only the rows for individual sectors, no totals
-arrests2 <- filter(arrests, Sector != "", Sector != "All")
-
-#merging the arrests2 and locations dataframes to get the latitude and longitude information for each Sector
-arrests_loc <- join(x = arrests2, y = locations,
-                    by = "Sector", type = "left")
 
 
 # getting a map of the United States to show the areas with the most arrests
@@ -217,25 +134,24 @@ g <- list(
 )
 
 #creating a function to create a map of the areas with the most arrests for a given year
-mapPlot <- function(yr, title = paste("Illegal Immigration Arrests in", as.character(yr))) {
-        tmp <- filter(arrests_loc, Year == yr)
-        p <- plot_geo(tmp, lat = ~lat, lon = ~lon, 
-                      color = ~Demographic, 
-                      colors = c("skyblue1", "skyblue4"), 
-                      size = ~Number_Arrested,
-                      sizes = c(10, 300),
-                      alpha = 0.65,
-                      text = ~paste('Demographic: ', Demographic, 
-                        '</br> Sector: ', Sector,
-                        '</br> Arrests: ', Number_Arrested)) %>%
-          add_markers() %>%
-          layout(title = title, geo = g)
-        print(p)
+mapPlot <- function(yr, title = paste("Sectors with the Most Arrests in", as.character(yr))) {
+  tmp <- filter(arrests_loc, Year == yr)
+  p <- plot_geo(tmp, lat = ~lat, lon = ~lon, 
+                color = ~Demographic, 
+                colors = c("skyblue1", "skyblue4"), 
+                size = ~Number_Arrested,
+                sizes = c(10, 600),
+                alpha = 0.65,
+                text = ~paste('Demographic: ', Demographic, 
+                              '</br> Sector: ', Sector,
+                              '</br> Arrests: ', Number_Arrested)) %>%
+    add_markers() %>%
+    layout(title = title, geo = g)
+  print(p)
 }
 
 mapPlot(2000)
 mapPlot(2016)
-
 
 #creating separate dataframes with just "Mexicans" arrests and just "All Immigrants" arrests to find the percentage
 # of arrests accounted for by Mexican immigrants each year
@@ -249,4 +165,13 @@ percentages <- data.frame(all_arrests$Year,
                           all_arrests$Number_Arrested,
                           round(mexican_arrests$Number_Arrested / all_arrests$Number_Arrested * 100, digits = 2))
 names(percentages) <- c("Year","Mexicans_Arrested", "Total_Arrests", "Percentage")
+
+percentages$Percentage <- paste(percentages$Percentage, '%', sep = '')
+
+
+
+
+
+
+
 
